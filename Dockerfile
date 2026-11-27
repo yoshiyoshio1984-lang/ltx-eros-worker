@@ -24,8 +24,12 @@ RUN git clone https://github.com/Comfy-Org/ComfyUI.git /comfyui \
 COPY requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt
 
-COPY handler.py /handler.py
+# Bake the models (~42GB) into the image so workers never download at
+# startup. Downloading at worker init filled the 50GB container disk and
+# killed workers with exit code 1 before they could take a job.
 COPY download_models.sh /download_models.sh
-RUN chmod +x /download_models.sh
+RUN chmod +x /download_models.sh && /bin/bash /download_models.sh
+
+COPY handler.py /handler.py
 
 CMD ["python", "-u", "/handler.py"]
