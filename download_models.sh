@@ -19,7 +19,9 @@ dl() {
 }
 
 # TenStrip LTX2.3-10Eros v1, FP8 mixed (full checkpoint: transformer + VAEs), ~29.2GB
-dl "https://huggingface.co/TenStrip/LTX2.3-10Eros/resolve/main/10Eros_v1_fp8mixed_learned.safetensors" \
+# NOTE: the upstream filename uses a HYPHEN (v1-fp8mixed); it is saved locally
+# under the underscore name that handler.py expects.
+dl "https://huggingface.co/TenStrip/LTX2.3-10Eros/resolve/main/10Eros_v1-fp8mixed_learned.safetensors" \
    "$M/checkpoints/10Eros_v1_fp8mixed_learned.safetensors"
 
 # Uncensored (abliterated) Gemma 3 12B text encoder for LTX-2.3, FP8 mixed, ~12.8GB
