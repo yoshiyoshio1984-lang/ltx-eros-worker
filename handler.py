@@ -35,6 +35,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
 import urllib.request
 import uuid
 
@@ -147,7 +148,8 @@ def build_workflow(prompt_text, negative_text, image_name,
                     "inputs": {"image": ["9", 0], "img_compression": 33}}
         wf["11"] = {"class_type": "LTXVImgToVideoInplace",
                     "inputs": {"vae": ["1", 2], "image": ["10", 0],
-                               "latent": ["7", 0], "strength": 1.0}}
+                               "latent": ["7", 0], "strength": 1.0,
+                               "bypass": False}}
         latent_ref = ["11", 0]
     wf["12"] = {"class_type": "LTXVEmptyLatentAudio",
                 "inputs": {"frames_number": num_frames,
@@ -183,8 +185,14 @@ def run_workflow(workflow):
     payload = json.dumps({"prompt": workflow, "client_id": client_id}).encode()
     req = urllib.request.Request(COMFYUI_URL + "/prompt", data=payload,
                                  headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        resp = json.loads(r.read())
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            resp = json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        # ComfyUI's 400 body names the failing node/input; keep it visible
+        # instead of surfacing a bare "Bad Request".
+        body = e.read().decode("utf-8", "replace")[:2000]
+        raise RuntimeError(f"ComfyUI /prompt HTTP {e.code}: {body}")
     if resp.get("node_errors"):
         raise RuntimeError(f"Workflow validation errors: {resp['node_errors']}")
     prompt_id = resp["prompt_id"]
