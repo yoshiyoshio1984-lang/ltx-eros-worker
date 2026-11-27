@@ -151,7 +151,8 @@ def build_workflow(prompt_text, negative_text, image_name,
         latent_ref = ["11", 0]
     wf["12"] = {"class_type": "LTXVEmptyLatentAudio",
                 "inputs": {"frames_number": num_frames,
-                           "frame_rate": int(round(fps)), "batch_size": 1}}
+                           "frame_rate": int(round(fps)), "batch_size": 1,
+                           "audio_vae": ["3", 0]}}
     wf["13"] = {"class_type": "LTXVConcatAVLatent",
                 "inputs": {"video_latent": latent_ref,
                            "audio_latent": ["12", 0]}}
